@@ -47,6 +47,6 @@ func WsServer(ws *websocket.Conn) {
 		}
 		room = roomList[room.RoomId]
 		receiveNodes := JsonDecode(receiveMsg)
-		HandleRequest(receiveNodes, uid, &room)
+		HandleRequest(receiveNodes.(map[string]interface{}), uid, &room)
 	}
 }

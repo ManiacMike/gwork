@@ -3,24 +3,36 @@ package gwork
 import (
 	"fmt"
 	"golang.org/x/net/websocket"
+	"log"
+	"net/http"
 	"strings"
 )
 
 var roomList map[string]Room //在线room列表
 var HandleRequest func(map[string]interface{}, string, *Room)
 
+func GetRoomUser(rid string) UserList {
+	return roomList[rid].Userlist
+}
+
 func Init(f func(map[string]interface{}, string, *Room)) {
 	roomList = make(map[string]Room)
 	HandleRequest = f
-}
+	http.Handle("/", websocket.Handler(WsServer))
+	serverConfig, err := getConfig("server")
+	if err != nil {
+		log.Fatal("server config error:", err)
+	}
+	fmt.Println("listen on port " + serverConfig["port"])
 
-func GetRoom(rid string) Room {
-	return roomList[rid]
+	if err := http.ListenAndServe(":"+serverConfig["port"], nil); err != nil {
+		log.Fatal("ListenAndServe:", err)
+	}
 }
 
 type User struct {
-	uid string
-	con *websocket.Conn
+	Uid string
+	Con *websocket.Conn
 }
 
 type UserList []User
@@ -51,8 +63,8 @@ func (room *Room) Remove(uid string) {
 func (room *Room) ChangeConn(index int, con *websocket.Conn) {
 	fmt.Println("visitor exist change connection")
 	curUser := (room.Userlist)[index]
-	curUser.con.Close()
-	(room.Userlist)[index].con = con
+	curUser.Con.Close()
+	(room.Userlist)[index].Con = con
 	roomList[room.RoomId] = *room
 }
 
@@ -60,7 +72,7 @@ func (room *Room) Exist(uid string) (bool, int) {
 	var find int
 	flag := false
 	for i, v := range room.Userlist {
-		if uid == v.uid {
+		if uid == v.Uid {
 			find = i
 			flag = true
 			break
@@ -72,7 +84,7 @@ func (room *Room) Exist(uid string) (bool, int) {
 func (room *Room) PushUserCount(event string, uid string) {
 	userlist := []string{}
 	for _, user := range room.Userlist {
-		userlist = append(userlist, user.uid)
+		userlist = append(userlist, user.Uid)
 	}
 	userCount := UserCountChangeReply{event, uid, len(room.Userlist), strings.Join(userlist, ",")}
 	replyBodyStr := JsonEncode(userCount)
@@ -82,9 +94,9 @@ func (room *Room) PushUserCount(event string, uid string) {
 func (room *Room) Broadcast(replyBodyStr string) error {
 	fmt.Println("Broadcast ", room.RoomId, " room user", len(room.Userlist))
 	for _, user := range room.Userlist {
-		if err := websocket.Message.Send(user.con, replyBodyStr); err != nil {
-			fmt.Println("Can't send user ", user.uid, " lost connection")
-			room.Remove(user.uid)
+		if err := websocket.Message.Send(user.Con, replyBodyStr); err != nil {
+			fmt.Println("Can't send user ", user.Uid, " lost connection")
+			room.Remove(user.Uid)
 			break
 		}
 	}
@@ -92,10 +104,10 @@ func (room *Room) Broadcast(replyBodyStr string) error {
 }
 
 func (room *Room) Push(user User, replyBodyStr string) error {
-	fmt.Println("Push ", room.RoomId, user.uid)
-	if err := websocket.Message.Send(user.con, replyBodyStr); err != nil {
-		fmt.Println("Can't send user ", user.uid, " lost connection")
-		room.Remove(user.uid)
+	fmt.Println("Push ", room.RoomId, user.Uid)
+	if err := websocket.Message.Send(user.Con, replyBodyStr); err != nil {
+		fmt.Println("Can't send user ", user.Uid, " lost connection")
+		room.Remove(user.Uid)
 	}
 	return nil
 }
