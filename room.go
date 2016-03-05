@@ -10,6 +10,8 @@ import (
 
 var roomList map[string]Room //在线room列表
 var HandleRequest func(map[string]interface{}, string, *Room)
+var LoseConnCallback func(string, *Room)
+var GetConnCallback func(string, *Room)
 
 func GetRoomUser(rid string) UserList {
 	return roomList[rid].Userlist
@@ -19,7 +21,7 @@ func Init(f func(map[string]interface{}, string, *Room)) {
 	roomList = make(map[string]Room)
 	HandleRequest = f
 	http.Handle("/", websocket.Handler(WsServer))
-	serverConfig, err := getConfig("server")
+	serverConfig, err := GetConfig("config.ini", "server")
 	if err != nil {
 		log.Fatal("server config error:", err)
 	}
@@ -28,6 +30,14 @@ func Init(f func(map[string]interface{}, string, *Room)) {
 	if err := http.ListenAndServe(":"+serverConfig["port"], nil); err != nil {
 		log.Fatal("ListenAndServe:", err)
 	}
+}
+
+func SetGetConnCallback(f func(string, *Room)) {
+	GetConnCallback = f
+}
+
+func SetLoseConnCallback(f func(string, *Room)) {
+	LoseConnCallback = f
 }
 
 type User struct {
@@ -46,6 +56,9 @@ func (room *Room) New(ws *websocket.Conn, uid string) string {
 	room.Userlist = append(room.Userlist, User{uid, ws})
 	fmt.Println("New user connect current user num", len(room.Userlist))
 	go room.PushUserCount("user_connect", uid)
+	if GetConnCallback != nil {
+		go GetConnCallback(uid, room)
+	}
 	roomList[room.RoomId] = *room
 	return uid
 }
@@ -57,6 +70,9 @@ func (room *Room) Remove(uid string) {
 		room.Userlist = append(room.Userlist[:find], room.Userlist[find+1:]...)
 		go room.PushUserCount("user_disconnect", uid)
 		roomList[room.RoomId] = *room
+		if LoseConnCallback != nil {
+			go LoseConnCallback(uid, room)
+		}
 	}
 }
 

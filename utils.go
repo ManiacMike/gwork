@@ -61,9 +61,9 @@ func float2Int(input interface{}) interface{} {
 	return input
 }
 
-func getConfig(sec string) (map[string]string, error) {
+func GetConfig(configFile string, sec string) (map[string]string, error) {
 	targetConfig := make(map[string]string)
-	cfg, err := config.ReadDefault("config.ini")
+	cfg, err := config.ReadDefault(configFile)
 	if err != nil {
 		return targetConfig, Error("unable to open config file or wrong fomart")
 	}
