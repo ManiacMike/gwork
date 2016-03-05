@@ -29,7 +29,8 @@ func JsonDecode(jsonStr string) interface{} {
 		panic(err)
 		return false
 	}
-	return float2Int(f)
+	return f
+	// return float2Int(f)
 }
 
 func float2Int(input interface{}) interface{} {

@@ -3,41 +3,13 @@ package gwork
 import (
 	"fmt"
 	"golang.org/x/net/websocket"
-	"log"
-	"net/http"
 	"strings"
 )
 
 var roomList map[string]Room //在线room列表
-var HandleRequest func(map[string]interface{}, string, *Room)
-var LoseConnCallback func(string, *Room)
-var GetConnCallback func(string, *Room)
 
 func GetRoomUser(rid string) UserList {
 	return roomList[rid].Userlist
-}
-
-func Init(f func(map[string]interface{}, string, *Room)) {
-	roomList = make(map[string]Room)
-	HandleRequest = f
-	http.Handle("/", websocket.Handler(WsServer))
-	serverConfig, err := GetConfig("config.ini", "server")
-	if err != nil {
-		log.Fatal("server config error:", err)
-	}
-	fmt.Println("listen on port " + serverConfig["port"])
-
-	if err := http.ListenAndServe(":"+serverConfig["port"], nil); err != nil {
-		log.Fatal("ListenAndServe:", err)
-	}
-}
-
-func SetGetConnCallback(f func(string, *Room)) {
-	GetConnCallback = f
-}
-
-func SetLoseConnCallback(f func(string, *Room)) {
-	LoseConnCallback = f
 }
 
 type User struct {

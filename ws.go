@@ -14,15 +14,23 @@ type UserCountChangeReply struct {
 
 func WsServer(ws *websocket.Conn) {
 	var err error
-	uid := ws.Request().FormValue("uid")
+	uid := ws.Request().FormValue(wsConfig["uid"])
 	if uid == "" {
 		fmt.Println("uid missing")
-		return
+		if GenerateUid != nil{
+			uid = GenerateUid()
+		}else{
+			uid = GenerateId()
+		}
 	}
-	roomId := ws.Request().FormValue("room_id")
+	var roomId string
+	if _,ok := wsConfig["room_id"];ok == false{
+		roomId = ""
+	}else{
+		roomId = ws.Request().FormValue(wsConfig["room_id"])
+	}
 	if roomId == "" {
-		fmt.Println("roomId missing")
-		return
+		roomId = "default" //no room param
 	}
 	room, exist := roomList[roomId]
 	if exist == false {
