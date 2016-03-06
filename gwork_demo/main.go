@@ -28,7 +28,7 @@ func main() {
 
 	gwork.SetLoseConnCallback(func(uid string, room *gwork.Room) {
 		close := map[string]interface{}{
-			"type": "close",
+			"type": "closed",
 			"id":   uid,
 		}
 		room.Broadcast(gwork.JsonEncode(close))
