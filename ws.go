@@ -17,16 +17,16 @@ func WsServer(ws *websocket.Conn) {
 	uid := ws.Request().FormValue(wsConfig["uid"])
 	if uid == "" {
 		fmt.Println("uid missing")
-		if GenerateUid != nil{
+		if GenerateUid != nil {
 			uid = GenerateUid()
-		}else{
+		} else {
 			uid = GenerateId()
 		}
 	}
 	var roomId string
-	if _,ok := wsConfig["room_id"];ok == false{
+	if _, ok := wsConfig["room_id"]; ok == false {
 		roomId = ""
-	}else{
+	} else {
 		roomId = ws.Request().FormValue(wsConfig["room_id"])
 	}
 	if roomId == "" {

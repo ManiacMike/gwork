@@ -27,7 +27,7 @@ type Room struct {
 func (room *Room) New(ws *websocket.Conn, uid string) string {
 	room.Userlist = append(room.Userlist, User{uid, ws})
 	fmt.Println("New user connect current user num", len(room.Userlist))
-	go room.PushUserCount("user_connect", uid)
+	// go room.PushUserCount("user_connect", uid)
 	if GetConnCallback != nil {
 		go GetConnCallback(uid, room)
 	}
@@ -40,7 +40,7 @@ func (room *Room) Remove(uid string) {
 	fmt.Println("user disconnect uid: ", uid)
 	if flag == true {
 		room.Userlist = append(room.Userlist[:find], room.Userlist[find+1:]...)
-		go room.PushUserCount("user_disconnect", uid)
+		// go room.PushUserCount("user_disconnect", uid)
 		roomList[room.RoomId] = *room
 		if LoseConnCallback != nil {
 			go LoseConnCallback(uid, room)
