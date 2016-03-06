@@ -28,7 +28,6 @@ h1 {
 	left: 30px;
 	width: 268px;
 	height: 30px;
-	background: url(images/logo.png);
 	overflow: hidden;
 	text-indent: 300px;
 }
@@ -75,7 +74,7 @@ strong {
 
 #chatText
 {
-	display:inline-block;	
+	display:inline-block;
 }
 #chatText,#chat
 {
@@ -125,9 +124,9 @@ strong {
 }
 
 #unsupported-browser {
-  display: none;  
+  display: none;
 	position: absolute;
-	z-index:2;	
+	z-index:2;
 	background-color: #fff;
 	background-image: linear-gradient(top, #fff, #e2e2e2);
 	background-image: -o-linear-gradient(top, #fff, #e2e2e2);
@@ -137,7 +136,7 @@ strong {
 
 	border-radius: 10px;
 	box-shadow: 1px 1px 5px #000;
-	
+
 	top: 55%;
 	left: 50%;
 	width:420px;
@@ -161,7 +160,7 @@ a#force-init-button {
 	text-decoration: underline;
 }
 a#force-init-button:hover {
-  color: #999;  
+  color: #999;
 }
 
 
@@ -201,14 +200,14 @@ a#force-init-button:hover {
 			margin-left: 30px;
 			margin-right: 40px;
 		}
-		
+
 		#info #share {
 			float: right;
 			margin-right: 40px;
 		}
-		
+
 		#info section ul {
-		
+
 		}
 			#info section ul li {
 				float: left;
@@ -217,11 +216,11 @@ a#force-init-button:hover {
 				#info section ul li a {
 					font-size: 1.3em;
 				}
-	
+
 	#info #settings .edit {
 		display: none;
 	}
-	
+
 
 #instructions {
 	position: absolute;
@@ -235,5 +234,3 @@ a#force-init-button:hover {
 	top: 0px;
 	right: 0px;
 }
-
-
