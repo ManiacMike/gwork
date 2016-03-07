@@ -27,7 +27,6 @@ type Room struct {
 func (room *Room) New(ws *websocket.Conn, uid string) string {
 	room.Userlist = append(room.Userlist, User{uid, ws})
 	fmt.Println("New user connect current user num", len(room.Userlist))
-	// go room.PushUserCount("user_connect", uid)
 	if GetConnCallback != nil {
 		go GetConnCallback(uid, room)
 	}
@@ -40,7 +39,6 @@ func (room *Room) Remove(uid string) {
 	fmt.Println("user disconnect uid: ", uid)
 	if flag == true {
 		room.Userlist = append(room.Userlist[:find], room.Userlist[find+1:]...)
-		// go room.PushUserCount("user_disconnect", uid)
 		roomList[room.RoomId] = *room
 		if LoseConnCallback != nil {
 			go LoseConnCallback(uid, room)
@@ -74,12 +72,17 @@ func (room *Room) PushUserCount(event string, uid string) {
 	for _, user := range room.Userlist {
 		userlist = append(userlist, user.Uid)
 	}
-	userCount := UserCountChangeReply{event, uid, len(room.Userlist), strings.Join(userlist, ",")}
-	replyBodyStr := JsonEncode(userCount)
-	room.Broadcast(replyBodyStr)
+	replyBody := map[string]interface{}{
+		"type":       event,
+		"uid":        uid,
+		"user_count": len(room.Userlist),
+		"user_list":  strings.Join(userlist, ","),
+	}
+	room.Broadcast(replyBody)
 }
 
-func (room *Room) Broadcast(replyBodyStr string) error {
+func (room *Room) Broadcast(replyBody map[string]interface{}) error {
+	replyBodyStr := JsonEncode(replyBody)
 	// fmt.Println("Broadcast ", room.RoomId, " room user", len(room.Userlist))
 	for _, user := range room.Userlist {
 		if err := websocket.Message.Send(user.Con, replyBodyStr); err != nil {
@@ -91,7 +94,8 @@ func (room *Room) Broadcast(replyBodyStr string) error {
 	return nil
 }
 
-func (room *Room) Push(user User, replyBodyStr string) error {
+func (room *Room) Push(user User, replyBody map[string]interface{}) error {
+	replyBodyStr := JsonEncode(replyBody)
 	// fmt.Println("Push ", room.RoomId, user.Uid)
 	if err := websocket.Message.Send(user.Con, replyBodyStr); err != nil {
 		fmt.Println("Can't send user ", user.Uid, " lost connection")

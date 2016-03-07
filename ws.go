@@ -5,13 +5,6 @@ import (
 	"golang.org/x/net/websocket"
 )
 
-type UserCountChangeReply struct {
-	Type      string `json:"type"`
-	Uid       string `json:"uid"`
-	UserCount int    `json:"user_count"`
-	UserList  string `json:"user_list"`
-}
-
 func WsServer(ws *websocket.Conn) {
 	var err error
 	uid := ws.Request().FormValue(wsConfig["uid"])

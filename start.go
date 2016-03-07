@@ -14,10 +14,9 @@ var GetConnCallback func(string, *Room)
 var wsConfig map[string]string
 var GenerateUid func() string
 
-func Init(f func(map[string]interface{}, string, *Room)) {
+func Start() {
 	var err error
 	roomList = make(map[string]Room)
-	HandleRequest = f
 	http.Handle("/", websocket.Handler(WsServer))
 	serverConfig, err := GetConfig("config.ini", "server")
 	if err != nil {
@@ -36,11 +35,20 @@ func Init(f func(map[string]interface{}, string, *Room)) {
 
 	fmt.Println("WebSocket Server listen on port:", serverConfig["port"])
 
-	if err := http.ListenAndServe(":"+serverConfig["port"], nil); err != nil {
-		log.Fatal("ListenAndServe:", err)
-		os.Exit(1)
-	}
+	rejects := make(chan error, 1)
+	go func(port string) {
+		rejects <- http.ListenAndServe(":"+port, nil)
+	}(serverConfig["port"])
 
+	select {
+	case err := <-rejects:
+		log.Fatal("server", "Can't start server: %s", err)
+		os.Exit(3)
+	}
+}
+
+func SetRequestHandler(f func(map[string]interface{}, string, *Room)) {
+	HandleRequest = f
 }
 
 func SetGetConnCallback(f func(string, *Room)) {

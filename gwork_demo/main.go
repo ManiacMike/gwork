@@ -23,7 +23,7 @@ func main() {
 			"type": "welcome",
 			"id":   uid,
 		}
-		room.Broadcast(gwork.JsonEncode(welcome))
+		room.Broadcast(welcome)
 	})
 
 	gwork.SetLoseConnCallback(func(uid string, room *gwork.Room) {
@@ -31,14 +31,12 @@ func main() {
 			"type": "closed",
 			"id":   uid,
 		}
-		room.Broadcast(gwork.JsonEncode(close))
+		room.Broadcast(close)
 	})
 
-	gwork.Init(func(receiveNodes map[string]interface{}, uid string, room *gwork.Room) {
+	gwork.SetRequestHandler(func(receiveNodes map[string]interface{}, uid string, room *gwork.Room) {
 		receiveType := receiveNodes["type"]
-		if receiveType == "login" {
-
-		} else if receiveType == "update" {
+		if receiveType == "update" {
 			var name interface{}
 			var ok bool
 			if name, ok = receiveNodes["name"]; ok == false {
@@ -59,14 +57,16 @@ func main() {
 				"name":       name,
 				"authorized": false,
 			}
-			room.Broadcast(gwork.JsonEncode(reply))
+			room.Broadcast(reply)
 		} else if receiveType == "message" {
 			reply := map[string]interface{}{
 				"type":    "message",
 				"id":      uid,
 				"message": receiveNodes["message"].(string),
 			}
-			room.Broadcast(gwork.JsonEncode(reply))
+			room.Broadcast(reply)
 		}
 	})
+
+	gwork.Start()
 }
