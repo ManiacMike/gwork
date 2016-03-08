@@ -29,6 +29,7 @@ func (room *Room) New(ws *websocket.Conn, uid string) string {
 	if GetConnCallback != nil {
 		go GetConnCallback(uid, room)
 	}
+	go SendStats(StatsCmdNewUser)
 	roomList[room.RoomId] = *room
 	return uid
 }
@@ -42,6 +43,7 @@ func (room *Room) Remove(uid string) {
 		if LoseConnCallback != nil {
 			go LoseConnCallback(uid, room)
 		}
+		go SendStats(StatsCmdLostUser)
 	}
 }
 

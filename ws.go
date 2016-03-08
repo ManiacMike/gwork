@@ -24,6 +24,7 @@ func WsServer(ws *websocket.Conn) {
 	if exist == false {
 		userlist := []User{}
 		room = Room{RoomId: roomId, Userlist: userlist}
+		go SendStats(StatsCmdNewRoom)
 	}
 	userExist, index := room.Exist(uid)
 	if userExist == true {

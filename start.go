@@ -47,6 +47,7 @@ func Start() {
 
 	logStart()
 	Logf(LogLevelNotice, "WebSocket Server listen on port: %s", conf.ServerPort)
+	statsStart()
 
 	rejects := make(chan error, 1)
 	go func(port string) {
