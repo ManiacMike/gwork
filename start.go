@@ -15,6 +15,10 @@ var GetConnCallback func(string, *Room)
 var GenerateUid func() string
 var conf *ConfigType
 
+const (
+	Version = "0.1.0"
+)
+
 func Start() {
 	roomList = make(map[string]Room)
 	http.Handle("/", websocket.Handler(WsServer))
