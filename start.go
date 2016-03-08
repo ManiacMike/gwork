@@ -1,50 +1,114 @@
 package gwork
 
 import (
-	"fmt"
 	"golang.org/x/net/websocket"
 	"log"
 	"net/http"
 	"os"
+	"strconv"
+	// "fmt"
 )
 
 var HandleRequest func(map[string]interface{}, string, *Room)
 var LoseConnCallback func(string, *Room)
 var GetConnCallback func(string, *Room)
-var wsConfig map[string]string
 var GenerateUid func() string
+var conf *ConfigType
 
 func Start() {
-	var err error
 	roomList = make(map[string]Room)
 	http.Handle("/", websocket.Handler(WsServer))
-	serverConfig, err := GetConfig("config.ini", "server")
-	if err != nil {
-		log.Fatal("server config error:", err)
-		os.Exit(1)
-	}
-	wsConfig, err = GetConfig("config.ini", "websocket")
-	if err != nil {
-		log.Fatal("websocket config error:", err)
-		os.Exit(1)
-	}
-	if _, ok := wsConfig["uid"]; ok == false {
-		log.Fatal("websocket config uid error:", err)
-		os.Exit(1)
+
+	serverConfig := LoadConfig("server")
+	wsConfig := LoadConfig("websocket")
+	logConfig := LoadConfig("log")
+	adminConfig := LoadConfig("admin")
+
+	converted := convertInt(map[string]string{
+		"log_queue_size":  logConfig["log_queue_size"],
+		"log_buffer_size": logConfig["log_buffer_size"],
+		"log_level":       logConfig["log_level"],
+		"admin_port":      adminConfig["port"],
+	})
+
+	conf = &ConfigType{
+		ServerPort:    serverConfig["port"],
+		WsUidName:     wsConfig["uid_name"],
+		WsRidName:     wsConfig["rid_name"],
+		LogQueueSize:  uint(converted["log_queue_size"]),
+		LogBufferSize: uint16(converted["log_buffer_size"]),
+		LogLevel:      LogLevel(converted["log_level"]),
+		AdminPort:     uint(converted["port"]),
 	}
 
-	fmt.Println("WebSocket Server listen on port:", serverConfig["port"])
+	Logf(LogLevelNotice, "WebSocket Server listen on port: %s", conf.ServerPort)
 
 	rejects := make(chan error, 1)
 	go func(port string) {
 		rejects <- http.ListenAndServe(":"+port, nil)
-	}(serverConfig["port"])
-
+	}(conf.ServerPort)
 	select {
 	case err := <-rejects:
 		log.Fatal("server", "Can't start server: %s", err)
 		os.Exit(3)
 	}
+}
+
+func convertInt(params map[string]string) map[string]int {
+	converted := make(map[string]int)
+	for k, v := range params {
+		i, err := strconv.Atoi(v)
+		if err != nil {
+			log.Fatal(k, " convert to int error")
+			os.Exit(3)
+		}
+		converted[k] = i
+	}
+	return converted
+}
+
+func LoadConfig(section string) map[string]string {
+	configData, err := GetConfig("config.ini", section)
+	if err != nil {
+		log.Fatal(section+" config not found:", err)
+		os.Exit(1)
+	}
+	//需要再config.ini中设置的参数
+	var neededParams []string
+	//默认参数
+	var defaultParams map[string]string
+	switch section {
+	case "server":
+		neededParams = []string{"port"}
+	case "websocket":
+		defaultParams = map[string]string{
+			"uid_name": "uid",
+			"rid_name": "room_id",
+		}
+	case "log":
+		defaultParams = map[string]string{
+			"log_queue_size":  "1000",
+			"log_buffer_size": "2",
+			"log_level":       "1",
+		}
+	case "admin":
+		neededParams = []string{"port"}
+	default:
+		neededParams = []string{}
+		defaultParams = map[string]string{}
+	}
+	for _, param := range neededParams {
+		if _, ok := configData[param]; ok == false {
+			log.Fatal(section+" "+param+" config must be set:", err)
+			os.Exit(1)
+		}
+	}
+	for k, v := range defaultParams {
+		if _, ok := configData[k]; ok == false {
+			configData[k] = v
+		}
+	}
+	return configData
 }
 
 func SetRequestHandler(f func(map[string]interface{}, string, *Room)) {

@@ -1,27 +1,22 @@
 package gwork
 
 import (
-	"fmt"
 	"golang.org/x/net/websocket"
 )
 
 func WsServer(ws *websocket.Conn) {
 	var err error
-	uid := ws.Request().FormValue(wsConfig["uid"])
+	uid := ws.Request().FormValue(conf.WsUidName)
 	if uid == "" {
-		fmt.Println("uid missing")
+		Log(LogLevelInfo, "uid missing")
 		if GenerateUid != nil {
 			uid = GenerateUid()
 		} else {
 			uid = GenerateId()
 		}
 	}
-	var roomId string
-	if _, ok := wsConfig["room_id"]; ok == false {
-		roomId = ""
-	} else {
-		roomId = ws.Request().FormValue(wsConfig["room_id"])
-	}
+
+	roomId := ws.Request().FormValue(conf.WsRidName)
 	if roomId == "" {
 		roomId = "default" //no room param
 	}
@@ -34,7 +29,7 @@ func WsServer(ws *websocket.Conn) {
 	if userExist == true {
 		room.ChangeConn(index, ws)
 	} else {
-		fmt.Println("create new user")
+		Log(LogLevelInfo, "create new user")
 		uid = room.New(ws, uid)
 	}
 
@@ -42,7 +37,6 @@ func WsServer(ws *websocket.Conn) {
 		var receiveMsg string
 		if err = websocket.Message.Receive(ws, &receiveMsg); err != nil {
 			room = roomList[room.RoomId]
-			fmt.Println("Can't receive,user ", uid, " lost connection")
 			room.Remove(uid)
 			break
 		}
