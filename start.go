@@ -41,6 +41,7 @@ func Start() {
 		AdminPort:     uint(converted["port"]),
 	}
 
+	logStart()
 	Logf(LogLevelNotice, "WebSocket Server listen on port: %s", conf.ServerPort)
 
 	rejects := make(chan error, 1)
