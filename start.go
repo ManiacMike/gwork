@@ -20,7 +20,7 @@ const (
 )
 
 func Start() {
-	roomList = make(map[string]Room)
+	roomList = make(map[string]*Room)
 	http.Handle("/", websocket.Handler(WsServer))
 
 	serverConfig := LoadConfig("server")

@@ -6,9 +6,9 @@ import (
 
 func WsServer(ws *websocket.Conn) {
 	var (
-		err error
-		room Room
-		)
+		err  error
+		room *Room
+	)
 	uid := ws.Request().FormValue(conf.WsUidName)
 	if uid == "" {
 		Log(LogLevelInfo, "uid missing")
@@ -38,12 +38,10 @@ func WsServer(ws *websocket.Conn) {
 	for {
 		var receiveMsg string
 		if err = websocket.Message.Receive(ws, &receiveMsg); err != nil {
-			room = roomList[room.RoomId]
 			room.RemoveUser(uid)
 			break
 		}
-		room = roomList[room.RoomId]
 		receiveNodes := JsonDecode(receiveMsg)
-		HandleRequest(receiveNodes.(map[string]interface{}), uid, &room)
+		HandleRequest(receiveNodes.(map[string]interface{}), uid, room)
 	}
 }

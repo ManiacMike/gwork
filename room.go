@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-var roomList map[string]Room //在线room列表
+var roomList map[string]*Room //在线room列表
 
 type User struct {
 	Uid string
@@ -19,11 +19,12 @@ type Room struct {
 	Userlist []User
 }
 
-func NewRoom(roomId string) Room {
+func NewRoom(roomId string) *Room {
 	userlist := []User{}
 	room := Room{RoomId: roomId, Userlist: userlist}
 	go SendStats(StatsCmdNewRoom)
-	return room
+	roomList[roomId] = &room
+	return &room
 }
 
 func (room *Room) NewUser(ws *websocket.Conn, uid string) string {
@@ -33,7 +34,6 @@ func (room *Room) NewUser(ws *websocket.Conn, uid string) string {
 		go GetConnCallback(uid, room)
 	}
 	go SendStats(StatsCmdNewUser)
-	roomList[room.RoomId] = *room
 	return uid
 }
 
@@ -42,13 +42,12 @@ func (room *Room) RemoveUser(uid string) {
 	Log(LogLevelInfo, "user disconnect uid: ", uid)
 	if flag == true {
 		room.Userlist = append(room.Userlist[:find], room.Userlist[find+1:]...)
-		roomList[room.RoomId] = *room
 		if LoseConnCallback != nil {
 			go LoseConnCallback(uid, room)
 		}
 		go SendStats(StatsCmdLostUser)
-		if len(room.Userlist) == 0{
-			delete(roomList,room.RoomId)
+		if len(room.Userlist) == 0 {
+			delete(roomList, room.RoomId)
 			go SendStats(StatsCmdCloseRoom)
 		}
 	}
@@ -58,7 +57,6 @@ func (room *Room) ChangeConn(index int, con *websocket.Conn) {
 	curUser := (room.Userlist)[index]
 	curUser.Con.Close()
 	(room.Userlist)[index].Con = con
-	roomList[room.RoomId] = *room
 }
 
 func (room *Room) ExistUser(uid string) (bool, int) {
