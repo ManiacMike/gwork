@@ -67,6 +67,7 @@ func GetConfig(configFile string, sec string) (map[string]string, error) {
 	targetConfig := make(map[string]string)
 	cfg, err := config.ReadDefault(configFile)
 	if err != nil {
+		fmt.Println(err)
 		return targetConfig, Error("unable to open config file or wrong fomart")
 	}
 	sections := cfg.Sections()

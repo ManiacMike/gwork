@@ -9,7 +9,7 @@ func WsServer(ws *websocket.Conn) {
 		err  error
 		room *Room
 	)
-	uid := ws.Request().FormValue(conf.WsUidName)
+	uid := getParam(ws, "uid")
 	if uid == "" {
 		Log(LogLevelInfo, "uid missing")
 		if GenerateUid != nil {
@@ -19,7 +19,7 @@ func WsServer(ws *websocket.Conn) {
 		}
 	}
 
-	roomId := ws.Request().FormValue(conf.WsRidName)
+	roomId := getParam(ws, "rid")
 	if roomId == "" {
 		roomId = "default" //no room param
 	}
@@ -43,5 +43,23 @@ func WsServer(ws *websocket.Conn) {
 		}
 		receiveNodes := JsonDecode(receiveMsg)
 		HandleRequest(receiveNodes.(map[string]interface{}), uid, room)
+	}
+}
+
+func getParam(ws *websocket.Conn, name string) string {
+	var key string
+	if name == "uid" {
+		key = conf.WsUidName
+	} else {
+		key = conf.WsRidName
+	}
+	if conf.WsParamType == WsParamTypeGet {
+		return ws.Request().FormValue(key)
+	} else {
+		if uidCookie, err := ws.Request().Cookie(key); err != nil {
+			return ""
+		} else {
+			return uidCookie.Value
+		}
 	}
 }
