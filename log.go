@@ -23,8 +23,8 @@ type logData struct {
 	message string
 }
 
-func (this *logData) LevelString() (ret string) {
-	switch this.level {
+func getLevelString(level LogLevel) (ret string) {
+	switch level {
 	case LogLevelDebug:
 		ret = "DEBUG"
 	case LogLevelInfo:
@@ -37,6 +37,10 @@ func (this *logData) LevelString() (ret string) {
 		ret = "ERROR"
 	}
 	return
+}
+
+func (this *logData) LevelString() (ret string) {
+	return getLevelString(this.level)
 }
 
 var (

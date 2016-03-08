@@ -68,15 +68,19 @@ Version: %s
 Uptime: %s
 Copyright (c) 2016 gwork
 *******************************
-  ServerPort:     %d
-  LogLevel:   %d
+config:
+  ServerPort:          %s
+  LogLevel:            %s
+usage:
   Current User Num:    %d
-  Current Room Num:  %d
-  Peak User Num: %d
-  Peak Room Num: %d
+  Current Room Num:    %d
+  Peak User Num:       %d
+  Peak Room Num:       %d
 ===============================`,
 		stats.Version,
 		uptime,
+		conf.ServerPort,
+		getLevelString(conf.LogLevel),
 		stats.UserCurrent,
 		stats.RoomCurrent,
 		stats.UserPeak,

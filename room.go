@@ -7,10 +7,6 @@ import (
 
 var roomList map[string]Room //在线room列表
 
-func GetRoomUser(rid string) UserList {
-	return roomList[rid].Userlist
-}
-
 type User struct {
 	Uid string
 	Con *websocket.Conn
@@ -23,7 +19,14 @@ type Room struct {
 	Userlist []User
 }
 
-func (room *Room) New(ws *websocket.Conn, uid string) string {
+func NewRoom(roomId string) Room {
+	userlist := []User{}
+	room := Room{RoomId: roomId, Userlist: userlist}
+	go SendStats(StatsCmdNewRoom)
+	return room
+}
+
+func (room *Room) NewUser(ws *websocket.Conn, uid string) string {
 	room.Userlist = append(room.Userlist, User{uid, ws})
 	Log(LogLevelInfo, "New user connect current user num", len(room.Userlist))
 	if GetConnCallback != nil {
@@ -34,8 +37,8 @@ func (room *Room) New(ws *websocket.Conn, uid string) string {
 	return uid
 }
 
-func (room *Room) Remove(uid string) {
-	flag, find := room.Exist(uid)
+func (room *Room) RemoveUser(uid string) {
+	flag, find := room.ExistUser(uid)
 	Log(LogLevelInfo, "user disconnect uid: ", uid)
 	if flag == true {
 		room.Userlist = append(room.Userlist[:find], room.Userlist[find+1:]...)
@@ -44,6 +47,10 @@ func (room *Room) Remove(uid string) {
 			go LoseConnCallback(uid, room)
 		}
 		go SendStats(StatsCmdLostUser)
+		if len(room.Userlist) == 0{
+			delete(roomList,room.RoomId)
+			go SendStats(StatsCmdCloseRoom)
+		}
 	}
 }
 
@@ -54,7 +61,7 @@ func (room *Room) ChangeConn(index int, con *websocket.Conn) {
 	roomList[room.RoomId] = *room
 }
 
-func (room *Room) Exist(uid string) (bool, int) {
+func (room *Room) ExistUser(uid string) (bool, int) {
 	var find int
 	flag := false
 	for i, v := range room.Userlist {
@@ -85,7 +92,7 @@ func (room *Room) Broadcast(replyBody map[string]interface{}) error {
 	replyBodyStr := JsonEncode(replyBody)
 	for _, user := range room.Userlist {
 		if err := websocket.Message.Send(user.Con, replyBodyStr); err != nil {
-			room.Remove(user.Uid)
+			room.RemoveUser(user.Uid)
 			break
 		}
 	}
@@ -95,7 +102,7 @@ func (room *Room) Broadcast(replyBody map[string]interface{}) error {
 func (room *Room) Push(user User, replyBody map[string]interface{}) error {
 	replyBodyStr := JsonEncode(replyBody)
 	if err := websocket.Message.Send(user.Con, replyBodyStr); err != nil {
-		room.Remove(user.Uid)
+		room.RemoveUser(user.Uid)
 	}
 	return nil
 }

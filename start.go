@@ -32,7 +32,6 @@ func Start() {
 		"log_queue_size":  logConfig["log_queue_size"],
 		"log_buffer_size": logConfig["log_buffer_size"],
 		"log_level":       logConfig["log_level"],
-		"admin_port":      adminConfig["port"],
 	})
 
 	conf = &ConfigType{
@@ -42,15 +41,16 @@ func Start() {
 		LogQueueSize:  uint(converted["log_queue_size"]),
 		LogBufferSize: uint16(converted["log_buffer_size"]),
 		LogLevel:      LogLevel(converted["log_level"]),
-		AdminPort:     uint(converted["port"]),
+		AdminPort:     adminConfig["port"],
 	}
 
 	logStart()
-	Logf(LogLevelNotice, "WebSocket Server listen on port: %s", conf.ServerPort)
 	statsStart()
+	adminStart()
 
 	rejects := make(chan error, 1)
 	go func(port string) {
+		Logf(LogLevelNotice, "WebSocket Server listen on port: %s", conf.ServerPort)
 		rejects <- http.ListenAndServe(":"+port, nil)
 	}(conf.ServerPort)
 	select {

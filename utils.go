@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func GenerateId() string {
+func GenerateUnixNanoId() string {
 	return strconv.FormatInt(time.Now().UnixNano(), 10)
 }
 

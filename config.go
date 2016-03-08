@@ -7,5 +7,5 @@ type ConfigType struct {
 	LogQueueSize  uint
 	LogBufferSize uint16
 	LogLevel      LogLevel
-	AdminPort     uint
+	AdminPort     string
 }
