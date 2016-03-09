@@ -104,3 +104,12 @@ func (room *Room) Push(user User, replyBody map[string]interface{}) error {
 	}
 	return nil
 }
+
+func (room *Room) PushByUid(uid string, replyBody map[string]interface{}) error {
+	for _, user := range room.Userlist {
+		if uid == user.Uid {
+			return room.Push(user, replyBody)
+		}
+	}
+	return nil
+}
