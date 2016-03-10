@@ -60,8 +60,8 @@ func NewMap(width int, height int) *MapType {
 
 func (this *MapType) Encode(x, y int) (string, *Box) {
 	var geohash bytes.Buffer
-	var minX, maxX int = 0, this.width
-	var minY, maxY int = 0, this.height
+	var minX, maxX int = this.width / 2 * -1, this.width / 2
+	var minY, maxY int = this.height / 2 * -1, this.height / 2
 	var precision = this.precision
 	var mid int = 0
 

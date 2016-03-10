@@ -8,17 +8,21 @@ import (
 	"time"
 )
 
+var TheMap *gwork.MapType
+
 func main() {
 
 	fmt.Println("访问 ip:port/demo/")
 	http.Handle("/demo/", http.StripPrefix("/demo/", http.FileServer(http.Dir("Web"))))
 
+	TheMap = gwork.NewMap(64800, 64800)
 	gwork.SetGenerateUid(func() string {
 		id := int(time.Now().Unix())
 		return strconv.Itoa(id)
 	})
 
 	gwork.SetGetConnCallback(func(uid string, room *gwork.Room) {
+		TheMap.AddCoord(uid, 0, 0)
 		welcome := map[string]interface{}{
 			"type": "welcome",
 			"id":   uid,
@@ -27,6 +31,7 @@ func main() {
 	})
 
 	gwork.SetLoseConnCallback(func(uid string, room *gwork.Room) {
+		TheMap.DeleteCoordNode(uid)
 		close := map[string]interface{}{
 			"type": "closed",
 			"id":   uid,
@@ -57,7 +62,9 @@ func main() {
 				"name":       name,
 				"authorized": false,
 			}
-			room.Broadcast(reply)
+			go TheMap.UpdateCoord(uid, int(x), int(y))
+			go BroadcastNearby(x, y, reply, room)
+			// room.Broadcast(reply)
 		} else if receiveType == "message" {
 			reply := map[string]interface{}{
 				"type":    "message",
@@ -69,4 +76,11 @@ func main() {
 	})
 
 	gwork.Start()
+}
+
+func BroadcastNearby(x float64, y float64, reply map[string]interface{}, room *gwork.Room) {
+	uids := TheMap.QueryNearestSquare(int(x), int(y))
+	for _, uid := range uids {
+		room.PushByUid(uid, reply)
+	}
 }

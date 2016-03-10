@@ -33,11 +33,13 @@ func Start() {
 		"log_buffer_size": logConfig["log_buffer_size"],
 		"log_level":       logConfig["log_level"],
 		"ws_param_type":   wsConfig["param_type"],
+		"ws_broad_type":   wsConfig["broad_type"],
 	})
 
 	conf = &ConfigType{
 		ServerPort:    serverConfig["port"],
 		WsUidName:     wsConfig["uid_name"],
+		WsBroadType:   uint(converted["ws_broad_type"]),
 		WsRidName:     wsConfig["rid_name"],
 		WsParamType:   uint(converted["ws_param_type"]),
 		LogQueueSize:  uint(converted["log_queue_size"]),
@@ -89,6 +91,7 @@ func LoadConfig(section string) map[string]string {
 	case "server":
 		neededParams = []string{"port"}
 	case "websocket":
+		neededParams = []string{"broad_type"}
 		defaultParams = map[string]string{
 			"uid_name":   "uid",
 			"rid_name":   "room_id",

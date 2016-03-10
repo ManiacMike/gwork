@@ -8,6 +8,7 @@ const (
 type ConfigType struct {
 	ServerPort    string
 	WsUidName     string
+	WsBroadType   uint
 	WsRidName     string
 	WsParamType   uint
 	LogQueueSize  uint

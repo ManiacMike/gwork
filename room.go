@@ -5,7 +5,9 @@ import (
 	"strings"
 )
 
-var roomList map[string]*Room //在线room列表
+var (
+	roomList map[string]*Room //在线room列表
+)
 
 type User struct {
 	Uid string

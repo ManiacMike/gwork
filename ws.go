@@ -4,10 +4,17 @@ import (
 	"golang.org/x/net/websocket"
 )
 
+const (
+	WsBroadTypeAll  = 1
+	WsBroadTypeRoom = 2
+	WsBroadTypeMap  = 3
+)
+
 func WsServer(ws *websocket.Conn) {
 	var (
-		err  error
-		room *Room
+		err    error
+		roomId string
+		room   *Room
 	)
 	uid := getParam(ws, "uid")
 	if uid == "" {
@@ -18,9 +25,9 @@ func WsServer(ws *websocket.Conn) {
 			uid = GenerateUnixNanoId()
 		}
 	}
-
-	roomId := getParam(ws, "rid")
-	if roomId == "" {
+	if conf.WsBroadType == WsBroadTypeRoom {
+		roomId = getParam(ws, "rid")
+	} else {
 		roomId = "default" //no room param
 	}
 	room, exist := roomList[roomId]
