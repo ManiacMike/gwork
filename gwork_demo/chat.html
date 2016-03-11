@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<title>聊天室</title>
+<script src="https://code.jquery.com/jquery-1.11.3.js"></script>
+<link href="http://cdn.bootcss.com/bootstrap/2.3.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<style>
+  #log{height:400px;width:500px;border:1px solid rgb(55,55,55);border-radius:5px;padding:5px;overflow:auto}
+  p{color:rgb(100,100,100)}
+  #user_count{color:black;font-weight:bold}
+  textarea{width:500px;}
+  #uname{margin-top: 10px;}
+</style>
+<div class="container">
+<h1>golang websocket聊天室</h1>
+<p>当前在线 <span id="user_count">0</span> 人</p>
+<div id="log">
+</div>
+<br>
+<div>
+<div >名称：<input type="text" id="uname" value="匿名"> </div>
+<br>
+内容：<textarea id="textarea_content" class="textarea"></textarea>
+<a href="javascript:void(0)" id="send" class="btn" >发送</a>
+</div>
+</div>
+<script>
+  $(function(){
+    // helper function: log message to screen
+    var LINE_SEPARATOR = "#LINE_SEPARATOR#"
+    var status = "offline"
+    var isFocus=true;
+    window.onblur=function(){isFocus=false;}
+    window.onfocus = function(){isFocus=true;document.title = "聊天室"}
+    function log(msg)
+    {
+      $("#log").html($("#log").html()+msg+"<br><br>")
+    }
+    var uname = getCookie("uname")?getCookie("uname"):"匿名"
+	  $("#uname").val(uname)
+
+    function setCookie(name,value)
+    {
+      var Days = 1;
+      var exp = new Date();
+      exp.setTime(exp.getTime() + Days*24*60*60*1000);
+      document.cookie = name + "="+ escape (value) + ";expires=" + exp.toGMTString();
+    }
+    function getCookie(name)
+    {
+      var arr,reg=new RegExp("(^| )"+name+"=([^;]*)(;|$)");
+      if(arr=document.cookie.match(reg))
+        return unescape(arr[2]);
+      else
+        return null;
+    }
+
+    $("#uname").change(function(){
+      setCookie("uname",$("#uname").val())
+      uname = $("#uname").val();
+    });
+
+    //setup websocket with callbacks
+    var ws = new WebSocket('ws://'+window.location.host+'/');
+    ws.onopen = function() {
+      log("<span style='color:green'>连接成功</span>");
+      status = "online"
+    };
+    ws.onclose = function() {
+      log("<span style='color:red'>失去连接</span>");
+     	 $('#log').scrollTop( $('#log')[0].scrollHeight );
+       status = "offline"
+    };
+    ws.onerror = function(e) {
+      log("error from connect " + e);
+    	 $('#log').scrollTop( $('#log')[0].scrollHeight );
+       status = "offline"
+    }
+    ws.onmessage = function(event) {
+      var msg = JSON.parse(event.data);
+      if(msg.type == "session"){
+        setCookie("uid",msg.uid)
+      }else if(msg.type== "user_count"){
+        $("#user_count").html(msg.user_count)
+      }else{new RegExp("终古","g");
+        var t = msg.time
+        var d = new Date(t*1000);
+        var time = d.getHours()+":"+(d.getMinutes()<10?("0"+d.getMinutes()):d.getMinutes())+":"+(d.getSeconds()<10?("0"+d.getSeconds()):d.getSeconds());
+        var content = msg.content.toString()
+        content = content.replace(new RegExp(LINE_SEPARATOR,"g"),"<br>")
+        log("<span style='color:rgb(200,200,200)'>"+time + "</span> <span style='color:rgb(200,200,200);font-weight:bold'>" + msg.uname + "</span> <br> " + content);
+       	 $('#log').scrollTop( $('#log')[0].scrollHeight );
+         if(isFocus == false){
+          document.title = "[ 新消息 ]聊天室"
+         }
+      }
+    };
+    function sendMsg(){
+      if(status == "online"){
+        //log(msg);
+        var msg = '{"content":"'+$("#textarea_content").val()+'","uname":"'+uname+'"}'
+        ws.send(msg);
+        $("#textarea_content").val("");
+        $('#log').scrollTop( $('#log')[0].scrollHeight );
+      }else{
+        alert("连接失败")
+      }
+    }
+    $("#send").click(function(){
+      sendMsg()
+    });
+    document.onkeydown = function(e){
+      var ev = document.all ? window.event : e;
+      if(ev.ctrlKey &&  ev.which==13) {
+          sendMsg()
+          return false
+      }
+    }
+  });
+</script><body></html>
