@@ -2,7 +2,7 @@
 聊天室: http://120.24.55.22:8001/chat
 
 
-小蝌蚪游戏: http://120.24.55.22:8006/demo
+小蝌蚪游戏: http://120.24.55.22:8006/demo 多人同屏，基于范围推送
 
 小蝌蚪项目地址 https://github.com/ManiacMike/go_websocket_chatroom
 
