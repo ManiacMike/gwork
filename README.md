@@ -59,27 +59,28 @@ func main() {
 * 如果你使用其他的后端语言，请使用gateway的demo
 * 简单的服务器状态信息
 
-    Mikes-iMac:~ Mike$ telnet 127.0.0.1 8011
-    Trying 127.0.0.1...
-    Connected to localhost.
-    Escape character is '^]'.
-    `stats`
-    ===============================
-    Version: 0.1.0
-    Uptime: 2 minutes, 19 seconds
-    Copyright (c) 2016 gwork
-    *******************************
-    config:
-    ServerPort:          8001
-    LogLevel:            INFO
-    usage:
-    Current User Num:    1
-    Current Room Num:    1
-    Peak User Num:       1
-    Peak Room Num:       1
-    ===============================
-    `quit`
-
+~~~
+Mikes-iMac:~ Mike$ telnet 127.0.0.1 8011
+Trying 127.0.0.1...
+Connected to localhost.
+Escape character is '^]'.
+stats
+===============================
+Version: 0.1.0
+Uptime: 2 minutes, 19 seconds
+Copyright (c) 2016 gwork
+*******************************
+config:
+ServerPort:          8001
+LogLevel:            INFO
+usage:
+Current User Num:    1
+Current Room Num:    1
+Peak User Num:       1
+Peak Room Num:       1
+===============================
+quit
+~~~ 
 
 ## 配置及安装
 在你的项目下新建config.ini文件
