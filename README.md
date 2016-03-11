@@ -57,7 +57,7 @@ func main() {
 ~~~
 
 * 如果你使用其他的后端语言，请使用gateway的demo
-* 简单的服务器状态信息
+* 简单的服务器状态信息 8011是在配置文件中配置的admin port
 
 ~~~
 Mikes-iMac:~ Mike$ telnet 127.0.0.1 8011
@@ -80,7 +80,39 @@ Peak User Num:       1
 Peak Room Num:       1
 ===============================
 quit
-~~~ 
+~~~
 
 ## 配置及安装
 在你的项目下新建config.ini文件
+
+~~~ ini
+[server]
+#必须参数
+port = 8001
+
+[websocket]
+#必须参数，设置uid的参数名
+uid_name = uid
+#必选参数 1全局广播 2按房间广播 3按地理位置广播
+broad_type = 1
+#可选参数，默认room_id。设置room id的参数名
+#rid_name = room_id
+#可选参数，默认1(get)，可选2(cookie)。设置读取uid和rid的方式
+param_type = 2
+
+[log]
+#可选参数
+log_queue_size = 1000
+#可选参数
+log_buffer_size = 2
+#可选参数
+log_level = 1
+
+[admin]
+#必须参数
+port = 8011
+~~~
+
+go install
+
+go run chatroom_demo
