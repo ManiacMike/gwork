@@ -113,6 +113,4 @@ log_level = 1
 port = 8011
 ~~~
 
-go install
-
-go run chatroom_demo
+go run main.go
