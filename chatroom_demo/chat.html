@@ -83,7 +83,7 @@
         setCookie("uid",msg.uid)
       }else if(msg.type== "user_count"){
         $("#user_count").html(msg.user_count)
-      }else{new RegExp("终古","g");
+      }else{
         var t = msg.time
         var d = new Date(t*1000);
         var time = d.getHours()+":"+(d.getMinutes()<10?("0"+d.getMinutes()):d.getMinutes())+":"+(d.getSeconds()<10?("0"+d.getSeconds()):d.getSeconds());
