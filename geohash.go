@@ -3,6 +3,7 @@ package gwork
 import (
 	"bytes"
 	"math"
+	"sync"
 )
 
 // map 64800
@@ -43,6 +44,7 @@ type MapType struct {
 	precision      int
 	allCoordNodes  map[string]*CoordNode
 	geohashMapkeys map[string]map[string]bool
+	Lock *sync.Mutex
 }
 
 //创建全局的map
@@ -55,7 +57,7 @@ func NewMap(width int, height int) *MapType {
 	}
 	precision := int(math.Ceil(float64(height) / float64(grid)))
 	precision = 3
-	return &MapType{width, height, precision, make(map[string]*CoordNode), make(map[string]map[string]bool)}
+	return &MapType{width, height, precision, make(map[string]*CoordNode), make(map[string]map[string]bool), new(sync.Mutex)}
 }
 
 func (this *MapType) Encode(x, y int) (string, *Box) {
@@ -141,7 +143,8 @@ func (this *MapType) GetAllCoordNodes() map[string]*CoordNode {
 // 增加key的坐标节点
 func (this *MapType) AddCoordNode(key string, coordNode *CoordNode) {
 	this.allCoordNodes[key] = coordNode
-
+	this.Lock.Lock()
+	defer this.Lock.Unlock()
 	if this.geohashMapkeys[coordNode.Geohash] == nil {
 		this.geohashMapkeys[coordNode.Geohash] = make(map[string]bool)
 	}
@@ -163,7 +166,8 @@ func (this *MapType) DeleteCoordNode(key string) bool {
 	if _, ok := this.allCoordNodes[key]; !ok {
 		return false
 	}
-
+	this.Lock.Lock()
+	defer this.Lock.Unlock()
 	ghash := this.allCoordNodes[key].Geohash
 	delete(this.geohashMapkeys[ghash], key)
 	delete(this.allCoordNodes, key)
@@ -208,6 +212,8 @@ func (this *MapType) QueryNearestSquareFromKey(key string) []string {
 
 // 查找(x, y)附近(九宫格内)的节点,返回它们的key
 func (this *MapType) QueryNearestSquare(x, y int) []string {
+	this.Lock.Lock()
+	defer this.Lock.Unlock()
 	keys := make([]string, 0)
 	neighbors := this.GetNeighbors(x, y)
 	for _, ghash := range neighbors {
