@@ -1,7 +1,7 @@
 package gwork
 
 import (
-	"godoc.org/github.com/gorilla/websocket"
+	"github.com/gorilla/websocket"
 	"log"
 	"net/http"
 	"os"
