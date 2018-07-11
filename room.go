@@ -1,7 +1,8 @@
 package gwork
 
 import (
-	"github.com/gorilla/websocket"
+	"golang.org/x/net/websocket"
+	// "github.com/gorilla/websocket"
 	"strings"
 )
 
