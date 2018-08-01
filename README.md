@@ -1,8 +1,8 @@
 ## 线上demo
-聊天室: http://115.159.119.131:8001/chat
+聊天室: https://www.24dota.com:8001/chat
 
 
-小蝌蚪游戏: http://115.159.119.131:8006/demo 多人同屏，基于范围推送
+小蝌蚪游戏: https://www.24dota.com:8006/demo/ 多人同屏，基于范围推送
 
 小蝌蚪项目地址 https://github.com/ManiacMike/go_websocket_chatroom
 
