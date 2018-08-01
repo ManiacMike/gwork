@@ -11,6 +11,9 @@ type ConfigType struct {
 	WsBroadType   uint
 	WsRidName     string
 	WsParamType   uint
+	WsTlsEnable   uint
+	WsTlsCrt      string
+	WsTlsKey      string
 	LogQueueSize  uint
 	LogBufferSize uint16
 	LogLevel      LogLevel

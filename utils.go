@@ -17,7 +17,6 @@ func JsonEncode(nodes interface{}) string {
 	body, err := json.Marshal(nodes)
 	if err != nil {
 		panic(err.Error())
-		return "[]"
 	}
 	return string(body)
 }

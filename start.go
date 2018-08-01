@@ -35,6 +35,7 @@ func Start() {
 		"log_level":       logConfig["log_level"],
 		"ws_param_type":   wsConfig["param_type"],
 		"ws_broad_type":   wsConfig["broad_type"],
+		"ws_tls_enable":   wsConfig["ws_tls_enable"],
 	})
 
 	conf = &ConfigType{
@@ -43,6 +44,9 @@ func Start() {
 		WsBroadType:   uint(converted["ws_broad_type"]),
 		WsRidName:     wsConfig["rid_name"],
 		WsParamType:   uint(converted["ws_param_type"]),
+		WsTlsEnable:   uint(converted["ws_tls_enable"]),
+		WsTlsCrt: 	   wsConfig["ws_tls_crt"],
+		WsTlsKey: 	   wsConfig["ws_tls_key"],
 		LogQueueSize:  uint(converted["log_queue_size"]),
 		LogBufferSize: uint16(converted["log_buffer_size"]),
 		LogLevel:      LogLevel(converted["log_level"]),
@@ -56,7 +60,12 @@ func Start() {
 	rejects := make(chan error, 1)
 	go func(port string) {
 		Logf(LogLevelNotice, "WebSocket Server listen on port: %s", conf.ServerPort)
-		rejects <- http.ListenAndServe(":"+port, nil)
+
+		if conf.WsTlsEnable == 0{
+			rejects <- http.ListenAndServe(":"+port, nil)
+		}else{
+			rejects <- http.ListenAndServeTLS(":"+port, conf.WsTlsCrt, conf.WsTlsKey, nil)
+		}
 	}(conf.ServerPort)
 	select {
 	case err := <-rejects:
@@ -97,6 +106,9 @@ func LoadConfig(section string) map[string]string {
 			"uid_name":   "uid",
 			"rid_name":   "room_id",
 			"param_type": "get",
+			"ws_tls_enable" : "0",
+			"ws_tls_crt" : "",
+			"ws_tls_key" : "",
 		}
 	case "log":
 		defaultParams = map[string]string{
