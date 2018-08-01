@@ -27,7 +27,6 @@ func JsonDecode(jsonStr string) interface{} {
 	err := json.Unmarshal([]byte(jsonStr), &f)
 	if err != nil {
 		panic(err)
-		return false
 	}
 	return f
 	// return float2Int(f)
