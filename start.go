@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
-	"fmt"
+	// "fmt"
 )
 
 var HandleRequest func(map[string]interface{}, string, *Room)
@@ -52,7 +52,7 @@ func Start() {
 		LogLevel:      LogLevel(converted["log_level"]),
 		AdminPort:     adminConfig["port"],
 	}
-	fmt.Println(conf.WsTlsCrt, conf.WsTlsKey)
+	// fmt.Println(conf.WsTlsCrt, conf.WsTlsKey)
 
 	logStart()
 	statsStart()
